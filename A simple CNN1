@@ -1,0 +1,45 @@
+import numpy as np
+import tensorflow as tf
+import matplotlib.pyplot as plt
+
+# 1. Create two simple 6x6 images (0 is black, 1 is white)
+# Image 1: A vertical white line
+img1 = np.zeros((6, 6))
+img1[:, 2:4] = 1.0  
+
+# Image 2: A horizontal white line
+img2 = np.zeros((6, 6))
+img2[2:4, :] = 1.0  
+
+# Reshape for the CNN: (Batch size, Height, Width, Color Channels)
+X = np.array([img1, img2]).reshape(2, 6, 6, 1)
+
+# 2. Build a CNN with exactly ONE filter (3x3 size)
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Conv2D(filters=1, kernel_size=(3, 3), input_shape=(6, 6, 1), use_bias=False)
+])
+
+# 3. Manually set the filter to be a "Vertical Edge Detector"
+# It has positive numbers on the left, negative on the right
+vertical_filter = np.array([
+    [1, 0, -1],
+    [1, 0, -1],
+    [1, 0, -1]
+]).reshape((3, 3, 1, 1))
+
+model.set_weights([vertical_filter])
+
+# 4. Pass the images through the CNN
+outputs = model.predict(X)
+
+# 5. Display the results
+fig, axes = plt.subplots(2, 2, figsize=(8, 8))
+
+axes[0, 0].imshow(img1, cmap='gray'); axes[0, 0].set_title("Input 1: Vertical Line")
+axes[0, 1].imshow(outputs[0, :, :, 0], cmap='gray'); axes[0, 1].set_title("CNN Output 1")
+
+axes[1, 0].imshow(img2, cmap='gray'); axes[1, 0].set_title("Input 2: Horizontal Line")
+axes[1, 1].imshow(outputs[1, :, :, 0], cmap='gray'); axes[1, 1].set_title("CNN Output 2")
+
+plt.tight_layout()
+plt.show()
